@@ -1,27 +1,60 @@
 """
 Jinja2 template loader for Django 1.2 and above.
 
+Jinja2loader can load Jinja2 extensions, and filters written for classic Django
+templates.
 
-Copyright (C) 2010 Nathan Reynolds
+After installation, add jinja2loader.Loader to your project's settings file,
+e.g:
+    >>> TEMPLATE_LOADERS = (
+    ...     'jinja2loader.Loader',
+    ...     'django.template.loaders.filesystem.Loader',
+    ...     'django.template.loaders.app_directories.Loader',
+    ... )
 
-This software is provided 'as-is', without any express or implied
-warranty.  In no event will the authors be held liable for any damages
-arising from the use of this software.
+You probably want to keep the regular Django loaders in there, so you don't
+break apps that have their own templates - such as Django admin.
 
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions:
 
-1. The origin of this software must not be misrepresented; you must not
-   claim that you wrote the original software. If you use this software
-   in a product, an acknowledgment in the product documentation would be
-   appreciated but is not required.
-2. Altered source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-3. This notice may not be removed or altered from any source distribution.
-
-Nathan Reynolds nath@nreynolds.co.uk
+Settings:
+    JINJA2_TEMPLATE_DIRS:
+        A tuple of Jinja2 template directories. Defaults to TEMPLATE_DIRS.
+    
+    JINJA2_EXTENSIONS:
+        A tuple of Jinja2 extensions to load - e.g ('jinja2.ext.i18n',)
+    
+    JINJA2_GLOBALS:
+        A dictionary of global variables, passed to every template.
+    
+    JINJA2_DJANGO_FILTER_LIBRARIES:
+        A tuple of Django filter libraries to be registered, given in the
+        same format as Django's {% load %} tag - e.g ('humanize',)
+    
+    JINJA2_USE_DEFAULT_DJANGOFILTERS:
+        If True (default), loads Django's built-in filters.
 """
+
+
+# Copyright (C) 2010 Nathan Reynolds
+# 
+# This software is provided 'as-is', without any express or implied
+# warranty.  In no event will the authors be held liable for any damages
+# arising from the use of this software.
+# 
+# Permission is granted to anyone to use this software for any purpose,
+# including commercial applications, and to alter it and redistribute it
+# freely, subject to the following restrictions:
+# 
+# 1. The origin of this software must not be misrepresented; you must not
+#    claim that you wrote the original software. If you use this software
+#    in a product, an acknowledgment in the product documentation would be
+#    appreciated but is not required.
+# 2. Altered source versions must be plainly marked as such, and must not be
+#    misrepresented as being the original software.
+# 3. This notice may not be removed or altered from any source distribution.
+# 
+# Nathan Reynolds nath@nreynolds.co.uk
+
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -38,7 +71,7 @@ EXTENSIONS = getattr(settings, 'JINJA2_EXTENSIONS', ())
 GLOBALS = getattr(settings, 'JINJA2_GLOBALS', {})
 
 DJANGO_FILTER_LIBRARIES = getattr(settings, 'JINJA2_DJANGO_FILTER_LIBRARIES', ())
-USE_DEFAULT_FILTERS = getattr(settings, 'JINJA2_USE_DEFAULT_FILTERS', True)
+USE_DEFAULT_DJANGO_FILTERS = getattr(settings, 'JINJA2_USE_DEFAULT_DJANGO_FILTERS', True)
 
 
 def load_django_filters(filters, library_names, use_default_filters):
@@ -72,10 +105,7 @@ class Template(jinja2.Template):
 
 
 class Loader(loader.BaseLoader):
-    if jinja2:
-        is_usable = True
-    else:
-        is_usable = False
+    is_usable = jinja2 is not None
     
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(TEMPLATE_DIRS),
@@ -86,7 +116,7 @@ class Loader(loader.BaseLoader):
     load_django_filters(
         env.filters,
         library_names=DJANGO_FILTER_LIBRARIES,
-        use_default_filters=USE_DEFAULT_FILTERS,
+        use_default_filters=USE_DEFAULT_DJANGO_FILTERS,
     )
     
     env.globals.update(GLOBALS)
