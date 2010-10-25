@@ -1,8 +1,6 @@
 """
-Jinja2 template loader for Django 1.2 and above.
-
-Jinja2loader can load Jinja2 extensions, and filters written for classic Django
-templates.
+Jinja2 template loader for Django 1.2 and above. It can use Jinja2 extensions,
+and filters written for classic Django templates.
 
 After installation, add jinja2loader.Loader to your project's settings file,
 e.g:
