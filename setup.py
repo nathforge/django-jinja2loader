@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(
-    version='0.1.1',
+    version='0.1.2',
     url='http://github.com/nathforge/django-jinja2loader',
     name='django-jinja2loader',
     description='Jinja2 template loader for Django 1.2 and above.',
